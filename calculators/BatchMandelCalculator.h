@@ -8,6 +8,7 @@
 #define BATCHMANDELCALCULATOR_H
 
 #include <BaseMandelCalculator.h>
+#include <memory>
 
 class BatchMandelCalculator: public BaseMandelCalculator
 {
