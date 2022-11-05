@@ -34,7 +34,8 @@ int* LineMandelCalculator::calculateMandelbrot()
     int* pdata = m_rawData;
     int* prdata = m_rawRealData;
 
-    for (int i = 0; i < height; i++) {
+    const int itercount = std::lround(height / 2.);
+    for (int i = 0; i < itercount; i++) {
         float y = y_start + i * dy; // current imaginary value
 
         // initialize intermediate arrays
@@ -91,7 +92,10 @@ int* LineMandelCalculator::calculateMandelbrot()
                 break;
             }
         }
-        memcpy(m_rawData + width * i, m_results.get(), width * sizeof(int));
+        void* where = m_rawData + width * i;
+        void* where2 = m_rawData + width * (height - i - 1);
+        memcpy(where, m_results.get(), width * sizeof(int));
+        memcpy(where2, m_results.get(), width * sizeof(int));
     }
     return m_rawData;
 }
