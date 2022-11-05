@@ -51,20 +51,22 @@ int* LineMandelCalculator::calculateMandelbrot()
         // calculate an iteration
         for (int iters = 0; iters < limit; ++iters) {
 
-            // check results
             #pragma omp simd
             for (int j = 0; j < width; j++) {
+                // skip calculation if result achieved
                 if (m_resultMask[j])
                     continue;
                 float zImag = m_imagData[j];
                 float zReal = m_realData[j];
                 float r2 = zReal * zReal;
                 float i2 = zImag * zImag;
+                // check results
                 if (r2 + i2 > 4.0f) {
                     m_resultMask[j] = true;
                     m_results[j] = iters;
                 }
 
+                // calculate next iteration
                 m_imagData[j] = 2.0f * zReal * zImag + y;
                 m_realData[j] = r2 - i2 + m_startRealData[j];
             }
@@ -81,7 +83,7 @@ int* LineMandelCalculator::calculateMandelbrot()
             }
         }
 
-        // safe to result, account for symmetry
+        // save to result array, account for symmetry
         void* where = m_rawData + width * i;
         void* where2 = m_rawData + width * (height - i - 1);
         memcpy(where, m_results.get(), width * sizeof(int));
