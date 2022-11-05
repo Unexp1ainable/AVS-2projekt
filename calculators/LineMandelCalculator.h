@@ -6,6 +6,8 @@
  */
 
 #include <BaseMandelCalculator.h>
+#include <cmath>
+#include <cstring>
 #include <memory>
 
 class LineMandelCalculator: public BaseMandelCalculator {

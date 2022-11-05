@@ -9,15 +9,24 @@
 
 #include <BaseMandelCalculator.h>
 
-class BatchMandelCalculator : public BaseMandelCalculator
+class BatchMandelCalculator: public BaseMandelCalculator
 {
 public:
     BatchMandelCalculator(unsigned matrixBaseSize, unsigned limit);
     ~BatchMandelCalculator();
-    int * calculateMandelbrot();
+    int* calculateMandelbrot();
 
 private:
-    // @TODO add all internal parameters
+    std::unique_ptr<int[]> m_data;
+    std::unique_ptr<float[]> m_realData;
+    std::unique_ptr<float[]> m_startRealData;
+    std::unique_ptr<float[]> m_imagData;
+    std::unique_ptr<bool[]> m_resultMask;
+    std::unique_ptr<int[]> m_results;
+    int* m_rawData = nullptr;
+    int* m_rawRealData = nullptr;
+
+    static constexpr int BATCH_SIZE = 64;
 };
 
 #endif

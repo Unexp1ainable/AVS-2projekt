@@ -2,5 +2,5 @@
 /avs-proj01.zip
 /build
 /fig1.png
-/out.npz
+/*.npz
 /ref.png
