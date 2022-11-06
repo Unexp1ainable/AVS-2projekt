@@ -27,11 +27,88 @@ BatchMandelCalculator::BatchMandelCalculator(unsigned matrixBaseSize, unsigned l
 	, m_results(new int[width]())
 	, m_rawData(m_data.get())
 {
-	// @TODO allocate & prefill memory
 }
 
 BatchMandelCalculator::~BatchMandelCalculator() {
-	// @TODO cleanup the memory
+}
+
+
+void BatchMandelCalculator::processBatch(int batch, float y) {
+	int batchOffset = batch * BATCH_SIZE;
+	int fastEnd = BATCH_SIZE;
+
+	// calculate an iteration
+	for (int iters = 0; iters < limit; ++iters) {
+
+		int j = batchOffset;
+		#pragma omp simd
+		for (int jj = 0; jj < BATCH_SIZE; jj++) {
+			j++;
+			// skip calculation if result achieved
+			if (m_resultMask[j])
+				continue;
+			float zImag = m_imagData[j];
+			float zReal = m_realData[j];
+			float r2 = zReal * zReal;
+			float i2 = zImag * zImag;
+			// check results
+			if (r2 + i2 > 4.0f) {
+				m_resultMask[j] = true;
+				m_results[j] = iters;
+				fastEnd--;
+			}
+
+			// calculate next iteration
+			m_imagData[j] = 2.0f * zReal * zImag + y;
+			m_realData[j] = r2 - i2 + m_startRealData[j];
+		}
+
+		// check if everything was calculated
+		if (fastEnd == 0) {
+			break;
+		}
+	}
+}
+
+
+void BatchMandelCalculator::processBatchEpilog(float y) {
+	const int count = width % BATCH_SIZE;
+	if (count == 0) {
+		return;
+	}
+	int fastEnd = count;
+	int batchOffset = width - count;
+	// calculate an iteration
+	for (int iters = 0; iters < limit; ++iters) {
+
+		int j = batchOffset;
+		#pragma omp simd
+		for (int jj = 0; jj < count; jj++) {
+			j++;
+			// skip calculation if result achieved
+			if (m_resultMask[j])
+				continue;
+			float zImag = m_imagData[j];
+			float zReal = m_realData[j];
+			float r2 = zReal * zReal;
+			float i2 = zImag * zImag;
+			// check results
+			if (r2 + i2 > 4.0f) {
+				m_resultMask[j] = true;
+				m_results[j] = iters;
+				fastEnd--;
+			}
+
+			// calculate next iteration
+			m_imagData[j] = 2.0f * zReal * zImag + y;
+			m_realData[j] = r2 - i2 + m_startRealData[j];
+		}
+
+		// check if everything was calculated
+		if (fastEnd == 0) {
+			break;
+		}
+	}
 }
 
 
@@ -53,46 +130,11 @@ int* BatchMandelCalculator::calculateMandelbrot() {
 			m_resultMask[j] = false;
 		}
 
-		int batches = std::lround(std::ceil(width / (double)BATCH_SIZE));
+		int batches = (int)(width / (double)BATCH_SIZE);
 		for (int batch = 0; batch < batches; ++batch) {
-			int batchOffset = batch * BATCH_SIZE;
-			// calculate an iteration
-			for (int iters = 0; iters < limit; ++iters) {
-
-				int j = batchOffset;
-				#pragma omp simd
-				for (int jj = 0; jj < BATCH_SIZE; jj++) {
-					j++;
-					// skip calculation if result achieved
-					if (m_resultMask[j])
-						continue;
-					float zImag = m_imagData[j];
-					float zReal = m_realData[j];
-					float r2 = zReal * zReal;
-					float i2 = zImag * zImag;
-					// check results
-					if (r2 + i2 > 4.0f) {
-						m_resultMask[j] = true;
-						m_results[j] = iters;
-					}
-
-					// calculate next iteration
-					m_imagData[j] = 2.0f * zReal * zImag + y;
-					m_realData[j] = r2 - i2 + m_startRealData[j];
-				}
-
-				int sum = 0;
-				#pragma omp simd reduction(+:sum)
-				for (int j = 0; j < width; j++) {
-					sum += m_resultMask[j];
-				}
-
-				// check if everything was calculated
-				if (sum == width) {
-					break;
-				}
-			}
+			processBatch(batch, y);
 		}
+		processBatchEpilog(y);
 
 		// save to result array, account for symmetry
 		void* where = m_rawData + width * i;

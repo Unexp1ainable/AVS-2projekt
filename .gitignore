@@ -4,3 +4,6 @@
 /fig1.png
 /*.npz
 /ref.png
+CMakeFiles
+CMakeCache.txt
+dump

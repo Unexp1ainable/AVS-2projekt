@@ -17,6 +17,8 @@ public:
     int* calculateMandelbrot();
 
 private:
+    void processLine(float y);
+
     std::unique_ptr<int[]> m_data;
     std::unique_ptr<float[]> m_realData;
     std::unique_ptr<float[]> m_startRealData;

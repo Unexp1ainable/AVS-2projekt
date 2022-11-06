@@ -29,6 +29,41 @@ LineMandelCalculator::~LineMandelCalculator()
 {
 }
 
+
+void LineMandelCalculator::processLine(float y) {
+    int fastEnd = width;
+    // calculate an iteration
+    for (int iters = 0; iters < limit; ++iters) {
+
+        #pragma omp simd
+        for (int j = 0; j < width; j++) {
+            // skip calculation if result achieved
+            if (m_resultMask[j])
+                continue;
+            float zImag = m_imagData[j];
+            float zReal = m_realData[j];
+            float r2 = zReal * zReal;
+            float i2 = zImag * zImag;
+            // check results
+            if (r2 + i2 > 4.0f) {
+                m_resultMask[j] = true;
+                m_results[j] = iters;
+                fastEnd--;
+            }
+
+            // calculate next iteration
+            m_imagData[j] = 2.0f * zReal * zImag + y;
+            m_realData[j] = r2 - i2 + m_startRealData[j];
+        }
+
+        // check if everything was calculated
+        if (fastEnd == 0) {
+            break;
+        }
+    }
+}
+
+
 int* LineMandelCalculator::calculateMandelbrot()
 {
     int* pdata = m_rawData;
@@ -47,41 +82,7 @@ int* LineMandelCalculator::calculateMandelbrot()
             m_results[j] = limit;
             m_resultMask[j] = false;
         }
-
-        // calculate an iteration
-        for (int iters = 0; iters < limit; ++iters) {
-
-            #pragma omp simd
-            for (int j = 0; j < width; j++) {
-                // skip calculation if result achieved
-                if (m_resultMask[j])
-                    continue;
-                float zImag = m_imagData[j];
-                float zReal = m_realData[j];
-                float r2 = zReal * zReal;
-                float i2 = zImag * zImag;
-                // check results
-                if (r2 + i2 > 4.0f) {
-                    m_resultMask[j] = true;
-                    m_results[j] = iters;
-                }
-
-                // calculate next iteration
-                m_imagData[j] = 2.0f * zReal * zImag + y;
-                m_realData[j] = r2 - i2 + m_startRealData[j];
-            }
-
-            int sum = 0;
-            #pragma omp simd reduction(+:sum)
-            for (int j = 0; j < width; j++) {
-                sum += m_resultMask[j];
-            }
-
-            // check if everything was calculated
-            if (sum == width) {
-                break;
-            }
-        }
+        processLine(y);
 
         // save to result array, account for symmetry
         void* where = m_rawData + width * i;

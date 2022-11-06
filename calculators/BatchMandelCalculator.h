@@ -18,6 +18,9 @@ public:
     int* calculateMandelbrot();
 
 private:
+    void processBatch(int batch, float y);
+    void processBatchEpilog(float y);
+
     std::unique_ptr<int[]> m_data;
     std::unique_ptr<float[]> m_realData;
     std::unique_ptr<float[]> m_startRealData;
@@ -27,7 +30,8 @@ private:
     int* m_rawData = nullptr;
     int* m_rawRealData = nullptr;
 
-    static constexpr int BATCH_SIZE = 64;
+    static constexpr int BATCH_SIZE = 128;
+
 };
 
 #endif
