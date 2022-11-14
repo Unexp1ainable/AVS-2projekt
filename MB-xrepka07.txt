@@ -14,8 +14,8 @@ s vyrovnávacími pamäťami.
 (v GFLOPS)?
 ==============================================================================
 Ref     -  2.21 GFLOPS
-Line    -  9.71 GFLOPS
-Batch   - 12.38 GFLOPS
+Line    -  9.82 GFLOPS
+Batch   - 12.08 GFLOPS
 
 4. Jaká část kódu byla vektorizována v "Line" implementaci? Vyčteme tuto 
 informaci i u batch kalkulátoru?
