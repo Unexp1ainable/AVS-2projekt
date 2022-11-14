@@ -40,10 +40,9 @@ void BatchMandelCalculator::processBatch(int batch, float y) {
 	// calculate an iteration
 	for (int iters = 0; iters < limit; ++iters) {
 
-		int j = batchOffset;
+		int end = batchOffset + BATCH_SIZE;
 		#pragma omp simd
-		for (int jj = 0; jj < BATCH_SIZE; jj++) {
-			j++;
+		for (int j = batchOffset; j < BATCH_SIZE; j++) {
 			// skip calculation if result achieved
 			if (m_resultMask[j])
 				continue;
@@ -142,5 +141,6 @@ int* BatchMandelCalculator::calculateMandelbrot() {
 		memcpy(where, m_results.get(), width * sizeof(int));
 		memcpy(where2, m_results.get(), width * sizeof(int));
 	}
+
 	return m_rawData;
 }

@@ -1,9 +1,10 @@
 /.vscode
 /avs-proj01.zip
-/build
+/build*
 /fig1.png
 /*.npz
 /ref.png
 CMakeFiles
 CMakeCache.txt
 dump
+datalog.csv
