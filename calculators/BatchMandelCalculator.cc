@@ -42,7 +42,7 @@ void BatchMandelCalculator::processBatch(int batch, float y) {
 
 		int end = batchOffset + BATCH_SIZE;
 		#pragma omp simd
-		for (int j = batchOffset; j < BATCH_SIZE; j++) {
+		for (int j = batchOffset; j < end; j++) {
 			// skip calculation if result achieved
 			if (m_resultMask[j])
 				continue;
@@ -80,10 +80,9 @@ void BatchMandelCalculator::processBatchEpilog(float y) {
 	// calculate an iteration
 	for (int iters = 0; iters < limit; ++iters) {
 
-		int j = batchOffset;
+		int end = batchOffset + count;
 		#pragma omp simd
-		for (int jj = 0; jj < count; jj++) {
-			j++;
+		for (int j = batchOffset; j < end; j++) {
 			// skip calculation if result achieved
 			if (m_resultMask[j])
 				continue;
@@ -129,10 +128,12 @@ int* BatchMandelCalculator::calculateMandelbrot() {
 			m_resultMask[j] = false;
 		}
 
+		// process lines per batches
 		int batches = (int)(width / (double)BATCH_SIZE);
 		for (int batch = 0; batch < batches; ++batch) {
 			processBatch(batch, y);
 		}
+		// if line % batch != 0
 		processBatchEpilog(y);
 
 		// save to result array, account for symmetry

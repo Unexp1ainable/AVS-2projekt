@@ -2,24 +2,30 @@
 
 1. Proč je nutné určovat, zda má výpočet pokračovat?
 ==============================================================================
-
+Je zbytočné počítať nepotrebné veci. Pokiaľ sa požaduje od programu rýchlosť,
+odstránenie nepotrebných výpočtov je pomerne podstatné.
 
 2. Byla "Line" vektorizace efektivní? Proč?
 ==============================================================================
-
+Pomerne áno, ak keď nie tak ako batch implementácia. Kvôli neefektívnej práci
+s vyrovnávacími pamäťami.
 
 3. Jaká byla dosažena výkonnost v Intel Advisoru pro jednotlivé implementace 
 (v GFLOPS)?
 ==============================================================================
-
+Ref     -  2.21 GFLOPS
+Line    -  9.71 GFLOPS
+Batch   - 12.38 GFLOPS
 
 4. Jaká část kódu byla vektorizována v "Line" implementaci? Vyčteme tuto 
 informaci i u batch kalkulátoru?
 ==============================================================================
-
+Inicializácia pomocných polí a najvnútornejší cyklus počítajúci fraktál. Áno.
 
 5. Co vyčteme z Roofline modelu pro obě vektorizované implementace?
 ==============================================================================
+Batch - vektorizované cykly a funkcie prekonali L3 cache bandwidth, ale nie L2.
+        znamená to, že na práci s pamäťou sa dá ešte zapracovať
 
-
-
+Line - vektorizovaný cyklus je limitovaný priepustnosťou L3 cache, čo indikuje
+       neefektívne narábanie s vyrovnávacou pamäťou
